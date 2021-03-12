@@ -1,3 +1,4 @@
+use crate::cache::cache::{Cache, CacheExt};
 use crate::config::{
     address_info_cache_duration, base_transaction_service_url, exchange_api_cache_duration,
     long_error_duration, safe_app_manifest_cache_duration, safe_info_cache_duration,
@@ -5,7 +6,6 @@ use crate::config::{
 };
 use crate::models::commons::Page;
 use crate::providers::address_info::{AddressInfo, ContractInfo};
-use crate::utils::cache::{Cache, CacheExt};
 use crate::utils::context::Context;
 use crate::utils::errors::ApiResult;
 use crate::utils::json::default_if_null;
