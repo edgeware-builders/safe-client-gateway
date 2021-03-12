@@ -13,6 +13,7 @@ extern crate dotenv;
 #[macro_use]
 pub mod macros;
 
+mod cache;
 mod config;
 mod models;
 mod monitoring;
