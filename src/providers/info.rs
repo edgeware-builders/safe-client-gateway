@@ -1,4 +1,4 @@
-use crate::cache::cache::{Cache, CacheExt};
+use crate::cache::extensions_pub::{DBCacheRequest, InfoProviderCache};
 use crate::config::{
     address_info_cache_duration, base_transaction_service_url, exchange_api_cache_duration,
     long_error_duration, safe_app_manifest_cache_duration, safe_info_cache_duration,
@@ -86,7 +86,7 @@ pub trait InfoProvider {
 
 pub struct DefaultInfoProvider<'p> {
     client: &'p reqwest::blocking::Client,
-    cache: &'p dyn Cache,
+    cache: &'p dyn DBCacheRequest,
     safe_cache: HashMap<String, Option<SafeInfo>>,
     token_cache: HashMap<String, Option<TokenInfo>>,
 }
@@ -114,7 +114,7 @@ impl InfoProvider for DefaultInfoProvider<'_> {
 
     fn safe_app_info(&mut self, url: &str) -> ApiResult<SafeAppInfo> {
         let manifest_url = build_manifest_url(url)?;
-        let manifest_json = self.cache.request_cached(
+        let manifest_json = self.cache.request_cached_from_db(
             self.client,
             &manifest_url,
             safe_app_manifest_cache_duration(),
@@ -140,7 +140,7 @@ impl InfoProvider for DefaultInfoProvider<'_> {
                     base_transaction_service_url(),
                     address
                 );
-                let contract_info_json = self.cache.request_cached(
+                let contract_info_json = self.cache.request_cached_from_db(
                     self.client,
                     &url,
                     address_info_cache_duration(),
@@ -193,7 +193,7 @@ impl DefaultInfoProvider<'_> {
 
     fn load_safe_info(&mut self, safe: &String) -> ApiResult<Option<SafeInfo>> {
         let url = format!("{}/v1/safes/{}/", base_transaction_service_url(), safe);
-        let data: String = self.cache.request_cached(
+        let data: String = self.cache.request_cached_from_db(
             self.client,
             &url,
             safe_info_cache_duration(),
@@ -260,7 +260,7 @@ impl DefaultInfoProvider<'_> {
 
     fn fetch_exchange(&self) -> ApiResult<Exchange> {
         let url = format!("https://api.exchangeratesapi.io/latest?base=USD");
-        let body = self.cache.request_cached(
+        let body = self.cache.request_cached_from_db(
             self.client,
             &url,
             exchange_api_cache_duration(),

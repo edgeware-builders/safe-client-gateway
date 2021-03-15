@@ -1,4 +1,4 @@
-use crate::cache::cache::CacheExt;
+use crate::cache::extensions_pub::GeneralCache;
 use crate::config::{
     balances_cache_duration, base_transaction_service_url, request_error_cache_timeout,
 };

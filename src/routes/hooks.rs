@@ -1,4 +1,4 @@
-use crate::cache::cache::Cache;
+use crate::cache::extensions_pub::GeneralCache;
 use crate::config::webhook_token;
 use crate::models::backend::webhooks::Payload;
 use crate::services::hooks::invalidate_caches;

@@ -1,4 +1,4 @@
-use crate::cache::cache::CacheExt;
+use crate::cache::extensions_pub::GeneralCache;
 use crate::config::{balances_cache_duration, request_cache_duration};
 use crate::providers::info::DefaultInfoProvider;
 use crate::services::balances::*;

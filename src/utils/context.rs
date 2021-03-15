@@ -3,7 +3,8 @@ use rocket::request::{self, FromRequest, Request};
 use rocket::Outcome;
 use rocket::State;
 
-use crate::cache::cache::{Cache, ServiceCache};
+use crate::cache::cache::ServiceCache;
+use crate::cache::extensions_pub::DBCacheRequest;
 use crate::config::scheme;
 
 pub struct Context<'a, 'r> {
@@ -20,7 +21,7 @@ impl<'a, 'r> Context<'a, 'r> {
         self.get::<State<reqwest::blocking::Client>>().inner()
     }
 
-    pub fn cache(&self) -> &impl Cache {
+    pub fn cache(&self) -> &impl DBCacheRequest {
         &self.cache
     }
 
