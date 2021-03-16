@@ -27,6 +27,7 @@ pub trait Cache {
     fn invalidate_pattern(&self, pattern: &str);
     fn invalidate(&self, id: &str);
     fn info(&self) -> Option<String>;
+    fn select_db(&self, database_id: usize);
 }
 
 impl Cache for ServiceCache {
@@ -69,6 +70,10 @@ impl Cache for ServiceCache {
     fn info(&self) -> Option<String> {
         info(self)
     }
+
+    fn select_db(&self, database_id: usize) {
+        select_db(self, database_id);
+    }
 }
 
 pub trait CacheExt: Cache {
@@ -86,6 +91,8 @@ pub trait CacheExt: Cache {
     where
         R: Serialize,
     {
+        log::error!("Selecting database");
+        self.select_db(10);
         cache_resp(self, key, timeout, resp)
     }
 
@@ -96,6 +103,8 @@ pub trait CacheExt: Cache {
         timeout: usize,
         error_timeout: usize,
     ) -> ApiResult<String> {
+        log::error!("Selecting database");
+        self.select_db(10);
         request_cached(self, client, url, timeout, error_timeout)
     }
 }
@@ -127,4 +136,8 @@ fn scan_match_count<P: ToRedisArgs, C: ToRedisArgs, RV: FromRedisValue>(
 
 fn info(con: &redis::Connection) -> Option<String> {
     redis::cmd("INFO").query(con).ok()
+}
+
+fn select_db(con: &redis::Connection, database_id: usize) {
+    redis::cmd("SELECT").arg(database_id).execute(con);
 }
