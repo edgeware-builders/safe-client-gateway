@@ -1,4 +1,4 @@
-use crate::cache::cache::{Cache, CACHE_REQS_PREFIX, CACHE_RESP_PREFIX};
+use crate::cache::cache::{Cache, CacheExt, CACHE_REQS_PREFIX, CACHE_RESP_PREFIX};
 use crate::cache::cache_with_code::CachedWithCode;
 use crate::utils::errors::{ApiError, ApiResult};
 use rocket::response::content;
@@ -8,14 +8,15 @@ pub(super) fn invalidate_caches(cache: &impl Cache, key: &str) {
     cache.invalidate_pattern(&format!("c_re*{}*", &key));
 }
 
-pub(super) fn cache_resp<R>(
-    cache: impl Cache,
+pub(super) fn cache_resp<C, R>(
+    cache: &C,
     key: &str,
     timeout: usize,
     resp: impl Fn() -> ApiResult<R>,
 ) -> ApiResult<content::Json<String>>
 where
     R: Serialize,
+    C: Cache + ?Sized,
 {
     let cache_key = format!("{}_{}", CACHE_RESP_PREFIX, &key);
     let cached = cache.fetch(&cache_key);
@@ -30,13 +31,16 @@ where
     }
 }
 
-pub(super) fn request_cached<C: Cache>(
-    cache: C,
+pub(super) fn request_cached<C>(
+    cache: &C,
     client: &reqwest::blocking::Client,
     url: &str,
     timeout: usize,
     error_timeout: usize,
-) -> ApiResult<String> {
+) -> ApiResult<String>
+where
+    C: Cache + ?Sized,
+{
     let cache_key = format!("{}_{}", CACHE_REQS_PREFIX, &url);
     match cache.fetch(&cache_key) {
         Some(cached) => CachedWithCode::split(&cached).to_result(),

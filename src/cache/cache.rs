@@ -86,17 +86,7 @@ pub trait CacheExt: Cache {
     where
         R: Serialize,
     {
-        let cache_key = format!("{}_{}", CACHE_RESP_PREFIX, &key);
-        let cached = self.fetch(&cache_key);
-        match cached {
-            Some(value) => Ok(content::Json(value)),
-            None => {
-                let resp = resp()?;
-                let resp_string = serde_json::to_string(&resp)?;
-                self.create(&cache_key, &resp_string, timeout);
-                Ok(content::Json(resp_string))
-            }
-        }
+        cache_resp(self, key, timeout, resp)
     }
 
     fn request_cached(
