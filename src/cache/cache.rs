@@ -1,4 +1,5 @@
 use crate::cache::cache_with_code::CachedWithCode;
+use crate::cache::logic::{cache_resp, request_cached};
 use crate::config::redis_scan_count;
 use crate::utils::errors::{ApiError, ApiResult};
 use mockall::automock;
@@ -71,6 +72,7 @@ impl Cache for ServiceCache {
 }
 
 pub trait CacheExt: Cache {
+    //TODO
     fn invalidate_caches(&self, key: &str) {
         self.invalidate_pattern(&format!("c_re*{}*", &key));
     }
@@ -104,41 +106,7 @@ pub trait CacheExt: Cache {
         timeout: usize,
         error_timeout: usize,
     ) -> ApiResult<String> {
-        let cache_key = format!("{}_{}", CACHE_REQS_PREFIX, &url);
-        match self.fetch(&cache_key) {
-            Some(cached) => CachedWithCode::split(&cached).to_result(),
-            None => {
-                let response = client.get(url).send()?;
-                let status_code = response.status().as_u16();
-
-                // Early return and no caching if the error is a 500 or greater
-                if response.status().is_server_error() {
-                    return Err(ApiError::from_backend_error(
-                        42,
-                        format!("Got server error for {}", response.text()?).as_str(),
-                    ));
-                }
-
-                let is_client_error = response.status().is_client_error();
-                let raw_data = response.text()?;
-
-                if is_client_error {
-                    self.create(
-                        &cache_key,
-                        CachedWithCode::join(status_code, &raw_data).as_str(),
-                        error_timeout,
-                    );
-                    Err(ApiError::from_backend_error(status_code, &raw_data))
-                } else {
-                    self.create(
-                        &cache_key,
-                        CachedWithCode::join(status_code, &raw_data).as_str(),
-                        timeout,
-                    );
-                    Ok(raw_data.to_string())
-                }
-            }
-        }
+        request_cached(self, client, url, timeout, error_timeout)
     }
 }
 
