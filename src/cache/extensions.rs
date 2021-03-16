@@ -6,6 +6,10 @@ use rocket::response::content;
 use serde::Serialize;
 
 pub trait InfoCache: Cache {
+    fn has_key(&self, key: &str) -> bool {
+        <self as Cache>::has_key(key)
+    }
+
     fn invalidate_caches(&self, key: &str) {
         log::error!("database selection for INFO");
         self.invalidate_pattern(&format!("c_re*{}*", &key));

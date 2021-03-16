@@ -1,4 +1,4 @@
-use crate::cache::cache::Cache;
+use crate::cache::cache::CacheExt;
 use crate::config::webhook_token;
 use crate::models::backend::webhooks::Payload;
 use crate::services::hooks::invalidate_caches;
@@ -19,6 +19,6 @@ pub fn flush_all(context: Context, token: String) -> ApiResult<()> {
     if token != webhook_token() {
         bail!("Invalid token");
     }
-    context.cache().invalidate_pattern("*");
+    context.cache().flush_cache();
     Ok(())
 }
