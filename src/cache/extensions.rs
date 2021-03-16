@@ -5,9 +5,9 @@ use crate::utils::errors::{ApiError, ApiResult};
 use rocket::response::content;
 use serde::Serialize;
 
-pub(super) trait CacheExt: Cache {
-    //TODO
+pub trait InfoCache: Cache {
     fn invalidate_caches(&self, key: &str) {
+        log::error!("database selection for INFO");
         self.invalidate_pattern(&format!("c_re*{}*", &key));
     }
 
@@ -20,8 +20,8 @@ pub(super) trait CacheExt: Cache {
     where
         R: Serialize,
     {
-        log::error!("Selecting database");
-        self.select_db(10);
+        log::error!("database selection for INFO");
+        self.select_db(2);
         cache_resp(self, key, timeout, resp)
     }
 
@@ -32,9 +32,10 @@ pub(super) trait CacheExt: Cache {
         timeout: usize,
         error_timeout: usize,
     ) -> ApiResult<String> {
-        self.select_db(10);
+        log::error!("database selection for INFO");
+        self.select_db(2);
         request_cached(self, client, url, timeout, error_timeout)
     }
 }
 
-impl<T: Cache + ?Sized> CacheExt for T {}
+impl<T: Cache + ?Sized> InfoCache for T {}
