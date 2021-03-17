@@ -1,4 +1,4 @@
-use crate::cache::cache::Cache;
+use crate::cache::cache::{Cache, CacheExt};
 use crate::cache::extensions::InfoCache;
 use crate::config::{
     address_info_cache_duration, base_transaction_service_url, exchange_api_cache_duration,
@@ -87,7 +87,7 @@ pub trait InfoProvider {
 
 pub struct DefaultInfoProvider<'p> {
     client: &'p reqwest::blocking::Client,
-    cache: &'p dyn Cache,
+    cache: &'p dyn InfoCache,
     safe_cache: HashMap<String, Option<SafeInfo>>,
     token_cache: HashMap<String, Option<TokenInfo>>,
 }

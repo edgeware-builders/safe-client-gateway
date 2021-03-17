@@ -17,7 +17,7 @@ pub const CACHE_REQS_PREFIX: &'static str = "c_reqs";
 pub struct ServiceCache(redis::Connection);
 
 #[automock]
-pub trait Cache: private::Sealed {
+pub(super) trait Cache {
     fn fetch(&self, id: &str) -> Option<String>;
     fn create(&self, id: &str, dest: &str, timeout: usize);
     fn insert_in_hash(&self, hash: &str, id: &str, dest: &str);
@@ -30,7 +30,7 @@ pub trait Cache: private::Sealed {
     fn select_db(&self, database_id: usize);
 }
 
-pub(super) impl Cache for ServiceCache {
+impl Cache for ServiceCache {
     fn fetch(&self, id: &str) -> Option<String> {
         match self.get(id) {
             Ok(value) => Some(value),
@@ -78,16 +78,21 @@ pub(super) impl Cache for ServiceCache {
 
 pub trait CacheExt: Cache {
     fn info(&self) -> Option<String> {
-        self.info()
+        <Self as Cache>::info(self)
     }
 
     fn flush_cache(&self) {
-        self.invalidate_pattern("*");
+        <Self as Cache>::invalidate_pattern(self, "*");
     }
 
     fn invalidate_caches(&self, key: &str) {
         self.select_db(0);
-        self.invalidate_pattern(&format!("c_re*{}*", &key));
+        <Self as Cache>::invalidate_pattern(self, &format!("c_re*{}*", &key));
+    }
+
+    fn invalidate_pattern(&self, pattern: &str) {
+        self.select_db(0);
+        <Self as Cache>::invalidate_pattern(self, pattern);
     }
 
     fn cache_resp<R>(
