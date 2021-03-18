@@ -77,9 +77,11 @@ impl Cache for ServiceCache {
 }
 
 pub trait CacheExt: Cache {
+
+    fn db_index(&self) -> usize { 0 }
     //TODO
     fn invalidate_caches(&self, key: &str) {
-        self.select_db(0);
+        self.select_db(self.db_index());
         self.invalidate_pattern(&format!("c_re*{}*", &key));
     }
 
@@ -93,7 +95,7 @@ pub trait CacheExt: Cache {
         R: Serialize,
     {
         log::error!("Selecting database general");
-        self.select_db(0);
+        self.select_db(self.db_index());
         cache_resp(self, key, timeout, resp)
     }
 
@@ -105,7 +107,7 @@ pub trait CacheExt: Cache {
         error_timeout: usize,
     ) -> ApiResult<String> {
         log::error!("Selecting database general");
-        self.select_db(0);
+        self.select_db(self.db_index());
         request_cached(self, client, url, timeout, error_timeout)
     }
 }
